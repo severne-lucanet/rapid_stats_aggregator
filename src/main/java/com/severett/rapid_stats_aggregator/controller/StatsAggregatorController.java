@@ -3,16 +3,22 @@ package com.severett.rapid_stats_aggregator.controller;
 import com.severett.rapid_stats_aggregator.dto.InputDTO;
 import com.severett.rapid_stats_aggregator.service.LogFileProcessor;
 import com.severett.rapid_stats_aggregator.service.StatisticsProcessor;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.compress.utils.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
@@ -37,9 +43,9 @@ public class StatsAggregatorController {
         this.eventBus.on($("log_files"), logFileProcessor);
     }
     
-    @RequestMapping(value = "/{computerUuid}/upload_stats", method = RequestMethod.POST)
+    @RequestMapping(value = "/{computerUuid}/upload_statistics", method = RequestMethod.POST, consumes = "application/json")
     public void uploadStats(HttpServletRequest request, HttpServletResponse response,
-            @PathVariable("computerUuid") String computerUuid) {
+            @PathVariable("computerUuid") String computerUuid, @RequestBody String requestBody) {
         LOGGER.debug("Received statistics upload from {}", computerUuid);
         eventBus.notify("statistics", Event.wrap(new InputDTO<JSONObject>(computerUuid, new JSONObject())));
         response.setStatus(HttpServletResponse.SC_OK);
@@ -49,8 +55,12 @@ public class StatsAggregatorController {
     public void uploadLogs(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("computerUuid") String computerUuid, InputStream zipInputStream) {
         LOGGER.debug("Received log file upload from {}", computerUuid);
-        eventBus.notify("log_files", Event.wrap(new InputDTO<InputStream>(computerUuid, zipInputStream)));
-        response.setStatus(HttpServletResponse.SC_OK);
+        try {
+            eventBus.notify("log_files", Event.wrap(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream))));
+            response.setStatus(HttpServletResponse.SC_OK);
+        } catch (IOException ioe) {
+            LOGGER.error("Error parsing log data from {}: {}", computerUuid, ioe.getMessage());
+        }
     }
     
 }
