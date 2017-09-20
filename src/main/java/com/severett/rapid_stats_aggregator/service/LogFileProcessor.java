@@ -36,14 +36,13 @@ public class LogFileProcessor implements Consumer<Event<InputDTO<byte[]>>> {
             try (ZipFile zipFile = new ZipFile(inMemoryByteChannel)) {
                 ZipArchiveEntry archiveEntry = zipFile.getEntries().nextElement();
                 try (InputStream inputStream = zipFile.getInputStream(archiveEntry)) {
-                    Instant now = Clock.systemUTC().instant();
-                    Path fileOutputPath = Paths.get(logDirectory, String.format("%s_%d.txt", inputDTO.getComputerUuid(), now.toEpochMilli()));
+                    Path fileOutputPath = Paths.get(logDirectory, String.format("%s_%d.txt", inputDTO.getComputerUuid(), inputDTO.getTimeReceived().toEpochMilli()));
                     LOGGER.debug("Writing log file to {}", fileOutputPath);
                     Files.copy(inputStream, fileOutputPath, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
         } catch (IOException ioe) {
-            LOGGER.error("Error parsing log data from {}: {}", inputDTO.getComputerUuid(), ioe.getMessage());
+            LOGGER.error("Error processing log data from {}: {}", inputDTO.getComputerUuid(), ioe.getMessage());
         }
     }
     

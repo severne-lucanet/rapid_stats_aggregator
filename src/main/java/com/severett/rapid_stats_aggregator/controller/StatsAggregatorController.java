@@ -1,12 +1,11 @@
 package com.severett.rapid_stats_aggregator.controller;
 
 import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.reactor.RSAEventBus;
 import com.severett.rapid_stats_aggregator.service.LogFileProcessor;
 import com.severett.rapid_stats_aggregator.service.StatisticsProcessor;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.compress.utils.IOUtils;
@@ -18,10 +17,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.bus.Event;
-import reactor.bus.EventBus;
 import static reactor.bus.selector.Selectors.$;
 
 @RestController
@@ -30,12 +27,12 @@ public class StatsAggregatorController {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(StatsAggregatorController.class);
     
-    private final EventBus eventBus;
+    private final RSAEventBus eventBus;
     private final StatisticsProcessor statisticsProcessor;
     private final LogFileProcessor logFileProcessor;
     
     @Autowired
-    public StatsAggregatorController(EventBus eventBus, StatisticsProcessor statisticsProcessor, LogFileProcessor logFileProcessor) {
+    public StatsAggregatorController(RSAEventBus eventBus, StatisticsProcessor statisticsProcessor, LogFileProcessor logFileProcessor) {
         this.eventBus = eventBus;
         this.statisticsProcessor = statisticsProcessor;
         this.logFileProcessor = logFileProcessor;

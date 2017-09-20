@@ -24,6 +24,7 @@ public class LogFileProcessorTest {
     
     private File tempDir;
     private static final File GOOD_RESOURCES_DIRECTORY = new File("src/test/resources/good_logs");
+    private static final File BAD_RESOURCES_DIRECTORY = new File("src/test/resources/bad_logs");
     
     @Before
     public void setup() throws IOException {
@@ -34,11 +35,29 @@ public class LogFileProcessorTest {
     }
     
     @Test
-    public void creatLogFileTest() throws IOException {
+    public void createLogFileTest() throws IOException {
         File testLogFile = new File(GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
             logFileProcessor.accept(Event.wrap(new InputDTO<byte[]>("abc123", IOUtils.toByteArray(inputStream))));
             Assert.assertThat(tempDir.listFiles().length, is(1));
+        }
+    }
+    
+    @Test
+    public void noLogFileTest() throws IOException {
+        File testLogFile = new File(BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "nothing.zip");
+        try (InputStream inputStream = new FileInputStream(testLogFile)) {
+            logFileProcessor.accept(Event.wrap(new InputDTO<byte[]>("abc123", IOUtils.toByteArray(inputStream))));
+            Assert.assertThat(tempDir.listFiles().length, is(0));
+        }
+    }
+    
+    @Test
+    public void uncompressedLogFileTest() throws IOException {
+        File testLogFile = new File(BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "uncompressed.txt");
+        try (InputStream inputStream = new FileInputStream(testLogFile)) {
+            logFileProcessor.accept(Event.wrap(new InputDTO<byte[]>("abc123", IOUtils.toByteArray(inputStream))));
+            Assert.assertThat(tempDir.listFiles().length, is(0));
         }
     }
     
