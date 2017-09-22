@@ -1,5 +1,10 @@
 package com.severett.rapid_stats_aggregator.model;
 
+import java.math.BigDecimal;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.Range;
+
 public class ComputerStats {
     
     public static enum StatName {
@@ -21,23 +26,41 @@ public class ComputerStats {
         }
     }
 
+    @NotNull
+    private String computerUuid;
+    @NotNull
     private String operatingSystem;
+    @NotNull
     private String productVersion;
-    private Double processCPULoad;
-    private Double systemCPULoad;
+    @NotNull
+    @Range(min = 0, max = 100)
+    private BigDecimal processCPULoad;
+    @Range(min = 0, max = 100)
+    private BigDecimal systemCPULoad;
+    @Min(value = 0)
     private Long memoryCapacity;
+    @Min(value = 0)
     private Long memoryUsage;
     
     public ComputerStats() {
     }
     
-    public ComputerStats(String operatingSystem, String productVersion, Double cpuCapacity, Double cpuUsage, Long memoryCapacity, Long memoryUsage) {
+    public ComputerStats(String computerUuid, String operatingSystem, String productVersion, BigDecimal cpuCapacity, BigDecimal cpuUsage, Long memoryCapacity, Long memoryUsage) {
+        this.computerUuid = computerUuid;
         this.operatingSystem = operatingSystem;
         this.productVersion = productVersion;
         this.processCPULoad = cpuCapacity;
         this.systemCPULoad = cpuUsage;
         this.memoryCapacity = memoryCapacity;
         this.memoryUsage = memoryUsage;
+    }
+    
+    public String getComputerUuid() {
+        return computerUuid;
+    }
+    
+    public void setComputerUuid(String computerUuid) {
+        this.computerUuid = computerUuid;
     }
     
     public String getOperatingSystem() {
@@ -56,19 +79,19 @@ public class ComputerStats {
         this.productVersion = productVersion;
     }
     
-    public Double getProcessCPULoad() {
+    public BigDecimal getProcessCPULoad() {
         return processCPULoad;
     }
     
-    public void setProcessCPULoad(Double processCPULoad) {
+    public void setProcessCPULoad(BigDecimal processCPULoad) {
         this.processCPULoad = processCPULoad;
     }
     
-    public Double getSystemCPULoad() {
+    public BigDecimal getSystemCPULoad() {
         return systemCPULoad;
     }
     
-    public void setSystemCPULoad(Double systemCPULoad) {
+    public void setSystemCPULoad(BigDecimal systemCPULoad) {
         this.systemCPULoad = systemCPULoad;
     }
     

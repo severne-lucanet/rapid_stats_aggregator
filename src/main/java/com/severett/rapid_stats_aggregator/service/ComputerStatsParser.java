@@ -7,6 +7,6 @@ import org.json.JSONObject;
 
 public interface ComputerStatsParser {
 
-    public ComputerStats parseComputerStats(JSONObject statsObject) throws UnsupportedVersionException, StatsParserException;
+    public ComputerStats parseComputerStats(String computerUuid, JSONObject statsObject) throws UnsupportedVersionException, StatsParserException;
     
 }

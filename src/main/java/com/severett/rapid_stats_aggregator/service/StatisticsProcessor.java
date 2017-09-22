@@ -27,13 +27,14 @@ public class StatisticsProcessor implements Consumer<Event<InputDTO<JSONObject>>
     @Override
     public void accept(Event<InputDTO<JSONObject>> event) {
         InputDTO<JSONObject> inputDTO = event.getData();
-        LOGGER.debug("Processing statistics for computer {}", inputDTO.getComputerUuid());
+        String computerUuid = inputDTO.getComputerUuid();
+        LOGGER.debug("Processing statistics for computer {}", computerUuid);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(inputDTO.getPayload());
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(computerUuid, inputDTO.getPayload());
         } catch (UnsupportedVersionException uve) {
-            LOGGER.error("Version error parsing computer stats for computer {}: {}", inputDTO.getComputerUuid(), uve.getMessage());
+            LOGGER.error("Version error parsing computer stats for computer {}: {}", computerUuid, uve.getMessage());
         } catch (StatsParserException spe) {
-            LOGGER.error("Statistics parsing error for computer {}: {}", inputDTO.getComputerUuid(), spe.getMessage());
+            LOGGER.error("Statistics parsing error for computer {}: {}", computerUuid, spe.getMessage());
         }
     }
     
