@@ -1,10 +1,12 @@
 package com.severett.rapid_stats_aggregator.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Range;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ComputerStats {
     
     public static enum StatName {

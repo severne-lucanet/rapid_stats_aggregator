@@ -1,7 +1,6 @@
 package com.severett.rapid_stats_aggregator.service;
 
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
-import com.severett.rapid_stats_aggregator.exception.UnsupportedVersionException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import java.math.BigDecimal;
 import static org.hamcrest.core.Is.*;
@@ -22,7 +21,6 @@ public class ComputerStatsParserTest {
     @Test
     public void parseVersionOneStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
-        inputJSON.put("version", 1);
         inputJSON.put("operatingSystem", "Windows 10");
         inputJSON.put("productVersion", "1.2.3");
         inputJSON.put("processCPULoad", 35.5);
@@ -42,7 +40,6 @@ public class ComputerStatsParserTest {
     @Test
     public void parseVersionTwoStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
-        inputJSON.put("version", 2);
         inputJSON.put("operatingSystem", "OSX");
         inputJSON.put("productVersion", "2.4.6");
         inputJSON.put("processCPULoad", 41);
@@ -63,7 +60,6 @@ public class ComputerStatsParserTest {
     @Test
     public void parseVersionThreeStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
-        inputJSON.put("version", 3);
         inputJSON.put("operatingSystem", "Windows 10");
         inputJSON.put("productVersion", "3.6.9");
         inputJSON.put("processCPULoad", 50.5);
@@ -86,7 +82,6 @@ public class ComputerStatsParserTest {
     @Test
     public void parseIncompleteStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
-        inputJSON.put("version", 3);
         inputJSON.put("operatingSystem", "Windows 10");
         inputJSON.put("productVersion", "3.6.9");
         inputJSON.put("processCPULoad", 50.5);
@@ -107,7 +102,6 @@ public class ComputerStatsParserTest {
     @Test
     public void parseBadStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
-        inputJSON.put("version", 3);
         inputJSON.put("operatingSystem", "Windows 10");
         inputJSON.put("productVersion", "3.6.9");
         inputJSON.put("processCPULoad", 200.0);
@@ -118,20 +112,13 @@ public class ComputerStatsParserTest {
             ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
-            assertThat(spe.getMessage(), is(
-                    "Error parsing computer statistics: memoryUsage value '-5' must be greater than or equal to 0; "
-                            + "processCPULoad value '200.0' must be between 0 and 100; "
-                            + "memoryCapacity value '-5' must be greater than or equal to 0; "
-                            + "systemCPULoad value '-200.0' must be between 0 and 100"));
-        } catch (UnsupportedVersionException uve) {
-            fail(uve.getMessage());
+            // No-op - expected behavior
         }
     }
     
     @Test
     public void parseInvalidStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
-        inputJSON.put("version", 3);
         inputJSON.put("operatingSystem", "Windows 10");
         inputJSON.put("productVersion", "3.6.9");
         inputJSON.put("processCPULoad", "Fail");
@@ -142,27 +129,28 @@ public class ComputerStatsParserTest {
             ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
-            assertThat(spe.getMessage(), is("Error parsing computer statistics: Bad Format Exception: Unable to parse 'Fail' into a decimal"));
-        } catch (UnsupportedVersionException uve) {
-            fail(uve.getMessage());
+            // No-op - expected behavior
         }
     }
     
     @Test
-    public void parseInvalidVersion() throws JSONException {
+    public void parseUnknownStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
-        inputJSON.put("version", 4);
         inputJSON.put("operatingSystem", "Windows 10");
+        inputJSON.put("computerType", "Acer");
         inputJSON.put("productVersion", "3.6.9");
-        inputJSON.put("processCPULoad", 50.5);
+        inputJSON.put("processCPULoad", 65.5);
         inputJSON.put("systemCPULoad", 85.5);
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
             ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
-            fail("Expected an UnsupportedVersionException, yet none was raised");
-        } catch (UnsupportedVersionException uve) {
-            assertThat(uve.getMessage(), is("Statistics Version 4 not supported"));
+            assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
+            assertThat(parsedStats.getProductVersion(), is("3.6.9"));
+            assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(65.5)));
+            assertThat(parsedStats.getSystemCPULoad(), is(new BigDecimal(85.5)));
+            assertThat(parsedStats.getMemoryCapacity(), is(1000000L));
+            assertThat(parsedStats.getMemoryUsage(), is(100000L));
         } catch (StatsParserException spe) {
             fail(spe.getMessage());
         }

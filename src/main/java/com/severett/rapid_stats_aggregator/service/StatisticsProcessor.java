@@ -31,8 +31,6 @@ public class StatisticsProcessor implements Consumer<Event<InputDTO<JSONObject>>
         LOGGER.debug("Processing statistics for computer {}", computerUuid);
         try {
             ComputerStats parsedStats = computerStatsParser.parseComputerStats(computerUuid, inputDTO.getPayload());
-        } catch (UnsupportedVersionException uve) {
-            LOGGER.error("Version error parsing computer stats for computer {}: {}", computerUuid, uve.getMessage());
         } catch (StatsParserException spe) {
             LOGGER.error("Statistics parsing error for computer {}: {}", computerUuid, spe.getMessage());
         }
