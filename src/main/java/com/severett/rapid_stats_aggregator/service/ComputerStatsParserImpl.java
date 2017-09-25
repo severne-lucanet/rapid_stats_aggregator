@@ -1,6 +1,7 @@
 package com.severett.rapid_stats_aggregator.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.severett.rapid_stats_aggregator.dto.InputDTO;
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import java.io.IOException;
@@ -25,10 +26,11 @@ public class ComputerStatsParserImpl implements ComputerStatsParser {
     }
 
     @Override
-    public ComputerStats parseComputerStats(String computerUuid, JSONObject statsObject) throws StatsParserException {
+    public ComputerStats parseComputerStats(InputDTO<JSONObject> inputDTO) throws StatsParserException {
         try {
-            ComputerStats computerStats = objMapper.readValue(statsObject.toString(), ComputerStats.class);
-            computerStats.setComputerUuid(computerUuid);
+            ComputerStats computerStats = objMapper.readValue(inputDTO.getPayload().toString(), ComputerStats.class);
+            computerStats.setComputerUuid(inputDTO.getComputerUuid());
+            computerStats.setTimeReceived(inputDTO.getTimeReceived());
             Validator validator = validatorFactory.getValidator();
             Set<ConstraintViolation<ComputerStats>> constraintViolations = validator.validate(computerStats);
             if (constraintViolations.isEmpty()) {

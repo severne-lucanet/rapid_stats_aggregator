@@ -2,12 +2,13 @@ package com.severett.rapid_stats_aggregator.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
+import java.time.Instant;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Range;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ComputerStats {
+public class ComputerStats extends PersistenceEntity {
     
     public static enum StatName {
         OPERATING_SYSTEM("operatingSystem"),
@@ -27,9 +28,7 @@ public class ComputerStats {
             return jsonName;
         }
     }
-
-    @NotNull
-    private String computerUuid;
+    
     @NotNull
     private String operatingSystem;
     @NotNull
@@ -47,22 +46,14 @@ public class ComputerStats {
     public ComputerStats() {
     }
     
-    public ComputerStats(String computerUuid, String operatingSystem, String productVersion, BigDecimal cpuCapacity, BigDecimal cpuUsage, Long memoryCapacity, Long memoryUsage) {
-        this.computerUuid = computerUuid;
+    public ComputerStats(String computerUuid, Instant timeReceived, String operatingSystem, String productVersion, BigDecimal cpuCapacity, BigDecimal cpuUsage, Long memoryCapacity, Long memoryUsage) {
+        super(computerUuid, timeReceived);
         this.operatingSystem = operatingSystem;
         this.productVersion = productVersion;
         this.processCPULoad = cpuCapacity;
         this.systemCPULoad = cpuUsage;
         this.memoryCapacity = memoryCapacity;
         this.memoryUsage = memoryUsage;
-    }
-    
-    public String getComputerUuid() {
-        return computerUuid;
-    }
-    
-    public void setComputerUuid(String computerUuid) {
-        this.computerUuid = computerUuid;
     }
     
     public String getOperatingSystem() {

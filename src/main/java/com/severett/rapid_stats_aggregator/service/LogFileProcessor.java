@@ -1,21 +1,18 @@
 package com.severett.rapid_stats_aggregator.service;
 
 import com.severett.rapid_stats_aggregator.dto.InputDTO;
-import java.io.File;
+import com.severett.rapid_stats_aggregator.model.LogFile;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.Clock;
-import java.time.Instant;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.bus.Event;
 import reactor.fn.Consumer;
@@ -25,8 +22,12 @@ public class LogFileProcessor implements Consumer<Event<InputDTO<byte[]>>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogFileProcessor.class);
     
-    @Value("${com.severett.rapid_stats_aggregator.logdirectory}")
-    private String logDirectory;
+    private final Persister persister;
+    
+    @Autowired
+    public LogFileProcessor(Persister persister) {
+        this.persister = persister;
+    }
     
     @Override
     public void accept(Event<InputDTO<byte[]>> event) {
@@ -36,9 +37,9 @@ public class LogFileProcessor implements Consumer<Event<InputDTO<byte[]>>> {
             try (ZipFile zipFile = new ZipFile(inMemoryByteChannel)) {
                 ZipArchiveEntry archiveEntry = zipFile.getEntries().nextElement();
                 try (InputStream inputStream = zipFile.getInputStream(archiveEntry)) {
-                    Path fileOutputPath = Paths.get(logDirectory, String.format("%s_%d.txt", inputDTO.getComputerUuid(), inputDTO.getTimeReceived().toEpochMilli()));
-                    LOGGER.debug("Writing log file to {}", fileOutputPath);
-                    Files.copy(inputStream, fileOutputPath, StandardCopyOption.REPLACE_EXISTING);
+                    String content = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
+                    LogFile logFile = new LogFile(inputDTO.getComputerUuid(), inputDTO.getTimeReceived(), content);
+                    persister.saveLogFile(logFile);
                 }
             }
         } catch (IOException ioe) {

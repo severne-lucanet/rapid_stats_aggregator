@@ -2,7 +2,6 @@ package com.severett.rapid_stats_aggregator.service;
 
 import com.severett.rapid_stats_aggregator.dto.InputDTO;
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
-import com.severett.rapid_stats_aggregator.exception.UnsupportedVersionException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -18,10 +17,12 @@ public class StatisticsProcessor implements Consumer<Event<InputDTO<JSONObject>>
     private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsProcessor.class);
     
     private final ComputerStatsParser computerStatsParser;
+    private final Persister persister;
     
     @Autowired
-    public StatisticsProcessor(ComputerStatsParser computerStatsParser) {
+    public StatisticsProcessor(ComputerStatsParser computerStatsParser, Persister persister) {
         this.computerStatsParser = computerStatsParser;
+        this.persister = persister;
     }
     
     @Override
@@ -30,7 +31,8 @@ public class StatisticsProcessor implements Consumer<Event<InputDTO<JSONObject>>
         String computerUuid = inputDTO.getComputerUuid();
         LOGGER.debug("Processing statistics for computer {}", computerUuid);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(computerUuid, inputDTO.getPayload());
+            ComputerStats computerStats = computerStatsParser.parseComputerStats(inputDTO);
+            persister.saveComputerStats(computerStats);
         } catch (StatsParserException spe) {
             LOGGER.error("Statistics parsing error for computer {}: {}", computerUuid, spe.getMessage());
         }

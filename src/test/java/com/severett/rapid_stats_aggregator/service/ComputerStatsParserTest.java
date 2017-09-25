@@ -1,5 +1,6 @@
 package com.severett.rapid_stats_aggregator.service;
 
+import com.severett.rapid_stats_aggregator.dto.InputDTO;
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import java.math.BigDecimal;
@@ -25,7 +26,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("productVersion", "1.2.3");
         inputJSON.put("processCPULoad", 35.5);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
             assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
             assertThat(parsedStats.getProductVersion(), is("1.2.3"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(35.5)));
@@ -45,7 +46,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("processCPULoad", 41);
         inputJSON.put("systemCPULoad", 60);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
             assertThat(parsedStats.getOperatingSystem(), is("OSX"));
             assertThat(parsedStats.getProductVersion(), is("2.4.6"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(41.0)));
@@ -67,7 +68,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
             assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
             assertThat(parsedStats.getProductVersion(), is("3.6.9"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(50.5)));
@@ -87,7 +88,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("processCPULoad", 50.5);
         inputJSON.put("systemCPULoad", 85.5);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
             assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
             assertThat(parsedStats.getProductVersion(), is("3.6.9"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(50.5)));
@@ -109,7 +110,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", -5);
         inputJSON.put("memoryUsage", -5);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
             // No-op - expected behavior
@@ -126,7 +127,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
             // No-op - expected behavior
@@ -144,7 +145,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats("abc123", inputJSON);
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
             assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
             assertThat(parsedStats.getProductVersion(), is("3.6.9"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(65.5)));
