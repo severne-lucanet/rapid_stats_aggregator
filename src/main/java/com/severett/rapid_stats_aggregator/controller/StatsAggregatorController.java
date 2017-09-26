@@ -29,14 +29,10 @@ public class StatsAggregatorController {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatsAggregatorController.class);
     
     private final RSAEventBus eventBus;
-    private final StatisticsProcessor statisticsProcessor;
-    private final LogFileProcessor logFileProcessor;
     
     @Autowired
     public StatsAggregatorController(RSAEventBus eventBus, StatisticsProcessor statisticsProcessor, LogFileProcessor logFileProcessor) {
         this.eventBus = eventBus;
-        this.statisticsProcessor = statisticsProcessor;
-        this.logFileProcessor = logFileProcessor;
         this.eventBus.on($("statistics"), statisticsProcessor);
         this.eventBus.on($("log_files"), logFileProcessor);
     }

@@ -41,7 +41,7 @@ public class LogFileProcessorTest {
     
     @Before
     public void setup() {
-        logFileProcessor = new LogFileProcessor(persister);
+        logFileProcessor = new LogFileProcessorImpl(persister);
         logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.addAppender(mockAppender);
     }
