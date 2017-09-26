@@ -12,10 +12,14 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ComputerStatsParserImpl implements ComputerStatsParser {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(ComputerStatsParserImpl.class);
     
     private final ObjectMapper objMapper;
     private final ValidatorFactory validatorFactory;
@@ -28,6 +32,7 @@ public class ComputerStatsParserImpl implements ComputerStatsParser {
     @Override
     public ComputerStats parseComputerStats(InputDTO<JSONObject> inputDTO) throws StatsParserException {
         try {
+            LOGGER.debug("Parsing '{}'", inputDTO.getPayload().toString());
             ComputerStats computerStats = objMapper.readValue(inputDTO.getPayload().toString(), ComputerStats.class);
             computerStats.setComputerUuid(inputDTO.getComputerUuid());
             computerStats.setTimeReceived(inputDTO.getTimeReceived());

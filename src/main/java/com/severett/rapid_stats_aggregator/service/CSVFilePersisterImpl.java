@@ -20,11 +20,15 @@ public class CSVFilePersisterImpl implements Persister {
     private static final String DELIMITER = "###";
     
     private final Path statsFilePath;
-    private final Path logFilePath;    
+    private final Path logFilePath;  
     
-    public CSVFilePersisterImpl(@Value("${com.severett.rapid_stats_aggregator.csvfiledirectory}") String csvFileDirectory) {
-        statsFilePath = Paths.get(csvFileDirectory, "compStats.csv");
-        logFilePath = Paths.get(csvFileDirectory, "logs.csv");
+    public CSVFilePersisterImpl(
+            @Value("${com.severett.rapid_stats_aggregator.csv.directory}") String csvFileDirectory,
+            @Value("${com.severett.rapid_stats_aggregator.csv.compStatsFile}") String compStatsFile,
+            @Value("${com.severett.rapid_stats_aggregator.csv.logsFile}") String logsFile
+    ) {
+        statsFilePath = Paths.get(csvFileDirectory, compStatsFile);
+        logFilePath = Paths.get(csvFileDirectory, logsFile);
     }
     
     @Override
@@ -54,7 +58,7 @@ public class CSVFilePersisterImpl implements Persister {
         StringBuilder sb = new StringBuilder();
         sb.append(logFile.getComputerUuid()).append(DELIMITER);
         sb.append(logFile.getTimeReceived().getEpochSecond()).append(DELIMITER);
-        sb.append(logFile.getContent()).append("\n");
+        sb.append(logFile.getContent().replaceAll("\n", "\t")).append("\n");
         
         try {
             LOGGER.debug("Persisting log entry to {}", logFilePath);

@@ -10,25 +10,6 @@ import org.hibernate.validator.constraints.Range;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ComputerStats extends PersistenceEntity {
     
-    public static enum StatName {
-        OPERATING_SYSTEM("operatingSystem"),
-        PRODUCT_VERSION("productVersion"),
-        PROCESS_CPU_LOAD("processCPULoad"),
-        SYSTEM_CPU_LOAD("systemCPULoad"),
-        MEMORY_CAPACITY("memoryCapacity"),
-        MEMORY_USAGE("memoryUsage");
-        
-        private final String jsonName;
-        private StatName(String jsonName) {
-            this.jsonName = jsonName;
-        }
-
-        @Override
-        public String toString() {
-            return jsonName;
-        }
-    }
-    
     @NotNull
     private String operatingSystem;
     @NotNull

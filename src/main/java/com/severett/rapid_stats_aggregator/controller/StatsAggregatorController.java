@@ -9,6 +9,7 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.compress.utils.IOUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,13 @@ public class StatsAggregatorController {
     public void uploadStats(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("computerUuid") String computerUuid, @RequestBody String requestBody) {
         LOGGER.debug("Received statistics upload from {}", computerUuid);
-        eventBus.notify("statistics", Event.wrap(new InputDTO<JSONObject>(computerUuid, new JSONObject())));
-        response.setStatus(HttpServletResponse.SC_OK);
+        try {
+            eventBus.notify("statistics", Event.wrap(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody))));
+            response.setStatus(HttpServletResponse.SC_OK);
+        } catch (JSONException jsone) {
+            LOGGER.error("Error parsing JSON stats data from {}: {}", computerUuid, jsone.getMessage());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
     }
     
     @RequestMapping(value = "/{computerUuid}/upload_logs", method = RequestMethod.POST, consumes = "application/zip")
@@ -53,10 +59,13 @@ public class StatsAggregatorController {
             @PathVariable("computerUuid") String computerUuid, InputStream zipInputStream) {
         LOGGER.debug("Received log file upload from {}", computerUuid);
         try {
+            // Need to transfer the input stream in the controller, otherwise
+            // the input stream will close when this function terminates
             eventBus.notify("log_files", Event.wrap(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream))));
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (IOException ioe) {
             LOGGER.error("Error parsing log data from {}: {}", computerUuid, ioe.getMessage());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
     

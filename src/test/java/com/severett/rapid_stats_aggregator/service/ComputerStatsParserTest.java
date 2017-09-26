@@ -20,46 +20,7 @@ public class ComputerStatsParserTest {
     }
     
     @Test
-    public void parseVersionOneStats() throws JSONException {
-        JSONObject inputJSON = new JSONObject();
-        inputJSON.put("operatingSystem", "Windows 10");
-        inputJSON.put("productVersion", "1.2.3");
-        inputJSON.put("processCPULoad", 35.5);
-        try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
-            assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
-            assertThat(parsedStats.getProductVersion(), is("1.2.3"));
-            assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(35.5)));
-            assertThat(parsedStats.getSystemCPULoad(), nullValue());
-            assertThat(parsedStats.getMemoryCapacity(), nullValue());
-            assertThat(parsedStats.getMemoryUsage(), nullValue());
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }
-    
-    @Test
-    public void parseVersionTwoStats() throws JSONException {
-        JSONObject inputJSON = new JSONObject();
-        inputJSON.put("operatingSystem", "OSX");
-        inputJSON.put("productVersion", "2.4.6");
-        inputJSON.put("processCPULoad", 41);
-        inputJSON.put("systemCPULoad", 60);
-        try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<JSONObject>("abc123", inputJSON));
-            assertThat(parsedStats.getOperatingSystem(), is("OSX"));
-            assertThat(parsedStats.getProductVersion(), is("2.4.6"));
-            assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(41.0)));
-            assertThat(parsedStats.getSystemCPULoad(), is(new BigDecimal(60.0)));
-            assertThat(parsedStats.getMemoryCapacity(), nullValue());
-            assertThat(parsedStats.getMemoryUsage(), nullValue());
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }
-    
-    @Test
-    public void parseVersionThreeStats() throws JSONException {
+    public void parseStats() throws JSONException {
         JSONObject inputJSON = new JSONObject();
         inputJSON.put("operatingSystem", "Windows 10");
         inputJSON.put("productVersion", "3.6.9");

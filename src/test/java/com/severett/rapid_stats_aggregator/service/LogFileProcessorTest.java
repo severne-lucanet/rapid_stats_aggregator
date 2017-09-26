@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.util.TestConstants;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,8 +38,6 @@ public class LogFileProcessorTest {
     private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
     
     private Logger logger;
-    private static final File GOOD_RESOURCES_DIRECTORY = new File("src/test/resources/good_logs");
-    private static final File BAD_RESOURCES_DIRECTORY = new File("src/test/resources/bad_logs");
     
     @Before
     public void setup() {
@@ -53,7 +52,7 @@ public class LogFileProcessorTest {
     
     @Test
     public void createLogFileTest() throws IOException {
-        File testLogFile = new File(GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
+        File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
             logFileProcessor.accept(Event.wrap(new InputDTO<byte[]>("abc123", IOUtils.toByteArray(inputStream))));
             verify(mockAppender, times(1)).doAppend(captorLoggingEvent.capture());
@@ -62,7 +61,7 @@ public class LogFileProcessorTest {
     
     @Test
     public void noLogFileTest() throws IOException {
-        File testLogFile = new File(BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "nothing.zip");
+        File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "nothing.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
             logFileProcessor.accept(Event.wrap(new InputDTO<byte[]>("abc123", IOUtils.toByteArray(inputStream))));
             verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
@@ -74,7 +73,7 @@ public class LogFileProcessorTest {
     
     @Test
     public void uncompressedLogFileTest() throws IOException {
-        File testLogFile = new File(BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "uncompressed.txt");
+        File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "uncompressed.txt");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
             logFileProcessor.accept(Event.wrap(new InputDTO<byte[]>("abc123", IOUtils.toByteArray(inputStream))));
             verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
