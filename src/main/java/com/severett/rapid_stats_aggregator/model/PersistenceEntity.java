@@ -9,14 +9,14 @@ public abstract class PersistenceEntity {
     private String computerUuid;
     
     @NotNull
-    private Instant timeReceived;
+    private Instant timestamp;
     
     public PersistenceEntity() {
     }
     
-    public PersistenceEntity(String computerUuid, Instant timeReceived) {
+    public PersistenceEntity(String computerUuid, Instant timestamp) {
         this.computerUuid = computerUuid;
-        this.timeReceived = timeReceived;
+        this.timestamp = timestamp;
     }
     
     public String getComputerUuid() {
@@ -27,12 +27,12 @@ public abstract class PersistenceEntity {
         this.computerUuid = computerUuid;
     }
     
-    public Instant getTimeReceived() {
-        return timeReceived;
+    public Instant getTimestamp() {
+        return timestamp;
     }
     
-    public void setTimeReceived(Instant timeReceived) {
-        this.timeReceived = timeReceived;
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
     }
     
 }

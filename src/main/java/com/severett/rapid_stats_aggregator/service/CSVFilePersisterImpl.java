@@ -35,7 +35,7 @@ public class CSVFilePersisterImpl implements Persister {
     public void saveComputerStats(ComputerStats computerStats) {
         StringBuilder sb = new StringBuilder();
         sb.append(computerStats.getComputerUuid()).append(DELIMITER);
-        sb.append(computerStats.getTimeReceived().getEpochSecond()).append(DELIMITER);
+        sb.append(computerStats.getTimestamp().getEpochSecond()).append(DELIMITER);
         sb.append(computerStats.getProductVersion()).append(DELIMITER);
         sb.append(computerStats.getOperatingSystem()).append(DELIMITER);
         sb.append(computerStats.getProcessCPULoad()).append(DELIMITER);
@@ -57,7 +57,7 @@ public class CSVFilePersisterImpl implements Persister {
     public void saveLogFile(LogFile logFile) {
         StringBuilder sb = new StringBuilder();
         sb.append(logFile.getComputerUuid()).append(DELIMITER);
-        sb.append(logFile.getTimeReceived().getEpochSecond()).append(DELIMITER);
+        sb.append(logFile.getTimestamp().getEpochSecond()).append(DELIMITER);
         sb.append(logFile.getContent().replaceAll("\n", "\t")).append("\n");
         
         try {

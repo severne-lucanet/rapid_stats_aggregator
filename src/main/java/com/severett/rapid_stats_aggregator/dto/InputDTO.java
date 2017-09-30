@@ -1,18 +1,17 @@
 package com.severett.rapid_stats_aggregator.dto;
 
-import java.time.Clock;
 import java.time.Instant;
 
 public class InputDTO<PayloadType> {
     
     private final String computerUuid;
     private final PayloadType payload;
-    private final Instant timeReceived;
+    private final Instant timestamp;
     
-    public InputDTO(String computerUuid, PayloadType payload) {
+    public InputDTO(String computerUuid, PayloadType payload, Instant timestamp) {
         this.computerUuid = computerUuid;
         this.payload = payload;
-        this.timeReceived = Clock.systemUTC().instant();
+        this.timestamp = timestamp;
     }
     
     public String getComputerUuid() {
@@ -23,8 +22,8 @@ public class InputDTO<PayloadType> {
         return payload;
     }
     
-    public Instant getTimeReceived() {
-        return timeReceived;
+    public Instant getTimestamp() {
+        return timestamp;
     }
     
 }

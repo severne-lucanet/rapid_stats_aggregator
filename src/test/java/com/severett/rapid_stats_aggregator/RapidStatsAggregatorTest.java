@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Clock;
 import org.apache.commons.compress.utils.IOUtils;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -64,6 +65,7 @@ public class RapidStatsAggregatorTest {
         abc123Content.put("memoryUsage", 100000);
         
         mvc.perform(post("/stats/abc123/upload_statistics")
+                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/json")
                 .content(abc123Content.toString())
             ).andExpect(status().isOk());
@@ -79,6 +81,7 @@ public class RapidStatsAggregatorTest {
         xyz890Content.put("memoryUsage", 100000);
         
         mvc.perform(post("/stats/xyz890/upload_statistics")
+                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/json")
                 .content(xyz890Content.toString())
             ).andExpect(status().isOk());
@@ -113,6 +116,7 @@ public class RapidStatsAggregatorTest {
         File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "app_log.zip");
         try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
             mvc.perform(post("/stats/abc123/upload_logs")
+                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/zip")
                 .content(IOUtils.toByteArray(fileInputStream))
             ).andExpect(status().isOk());
@@ -120,6 +124,39 @@ public class RapidStatsAggregatorTest {
             String[] csvStatsLines = new String(Files.readAllBytes(csvLogsFile.toPath())).split("\n");
             assertThat(csvStatsLines.length, is(1));
         }
+    }
+    
+    @Test
+    public void excludeTimestampTest() throws Exception {
+        JSONObject abc123Content = new JSONObject();
+        abc123Content.put("operatingSystem", "Windows 10");
+        abc123Content.put("productVersion", "3.6.9");
+        abc123Content.put("processCPULoad", 50.5);
+        abc123Content.put("systemCPULoad", 85.5);
+        abc123Content.put("memoryCapacity", 1000000);
+        abc123Content.put("memoryUsage", 100000);
+        
+        mvc.perform(post("/stats/abc123/upload_statistics")
+                .contentType("application/json")
+                .content(abc123Content.toString())
+            ).andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    public void nullTimestampTest() throws Exception {
+        JSONObject abc123Content = new JSONObject();
+        abc123Content.put("operatingSystem", "Windows 10");
+        abc123Content.put("productVersion", "3.6.9");
+        abc123Content.put("processCPULoad", 50.5);
+        abc123Content.put("systemCPULoad", 85.5);
+        abc123Content.put("memoryCapacity", 1000000);
+        abc123Content.put("memoryUsage", 100000);
+        
+        mvc.perform(post("/stats/abc123/upload_statistics")
+                .param("timestamp", "")
+                .contentType("application/json")
+                .content(abc123Content.toString())
+            ).andExpect(status().isBadRequest());
     }
     
     @Test
@@ -133,6 +170,7 @@ public class RapidStatsAggregatorTest {
         abc123Content.put("memoryUsage", "One Hundred Thousand");
         
         mvc.perform(post("/stats/abc123/upload_statistics")
+                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/json")
                 .content(abc123Content.toString())
             ).andExpect(status().isOk());
@@ -144,6 +182,7 @@ public class RapidStatsAggregatorTest {
     @Test
     public void setNoStatsTest() throws Exception {
         mvc.perform(post("/stats/abc123/upload_statistics")
+                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/json")
                 .content("TEST FAILURE")
             ).andExpect(status().isBadRequest());
@@ -154,6 +193,7 @@ public class RapidStatsAggregatorTest {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "nothing.zip");
         try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
             mvc.perform(post("/stats/abc123/upload_logs")
+                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/zip")
                 .content(IOUtils.toByteArray(fileInputStream))
             ).andExpect(status().isOk());
@@ -167,6 +207,7 @@ public class RapidStatsAggregatorTest {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "uncompressed.txt");
         try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
             mvc.perform(post("/stats/abc123/upload_logs")
+                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/zip")
                 .content(IOUtils.toByteArray(fileInputStream))
             ).andExpect(status().isOk());

@@ -35,7 +35,7 @@ public class ComputerStatsParserImpl implements ComputerStatsParser {
             LOGGER.debug("Parsing '{}'", inputDTO.getPayload().toString());
             ComputerStats computerStats = objMapper.readValue(inputDTO.getPayload().toString(), ComputerStats.class);
             computerStats.setComputerUuid(inputDTO.getComputerUuid());
-            computerStats.setTimeReceived(inputDTO.getTimeReceived());
+            computerStats.setTimestamp(inputDTO.getTimestamp());
             Validator validator = validatorFactory.getValidator();
             Set<ConstraintViolation<ComputerStats>> constraintViolations = validator.validate(computerStats);
             if (constraintViolations.isEmpty()) {

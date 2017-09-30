@@ -37,7 +37,7 @@ public class LogFileProcessorImpl implements LogFileProcessor {
                 ZipArchiveEntry archiveEntry = zipFile.getEntries().nextElement();
                 try (InputStream inputStream = zipFile.getInputStream(archiveEntry)) {
                     String content = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
-                    LogFile logFile = new LogFile(inputDTO.getComputerUuid(), inputDTO.getTimeReceived(), content);
+                    LogFile logFile = new LogFile(inputDTO.getComputerUuid(), inputDTO.getTimestamp(), content);
                     persister.saveLogFile(logFile);
                 }
             }
