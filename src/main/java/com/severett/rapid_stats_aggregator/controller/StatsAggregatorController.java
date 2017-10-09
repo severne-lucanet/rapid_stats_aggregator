@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.bus.Event;
 import static reactor.bus.selector.Selectors.$;
-import static reactor.bus.selector.Selectors.$;
 
 @RestController
 @RequestMapping("/stats")
@@ -43,7 +42,7 @@ public class StatsAggregatorController {
     @RequestMapping(value = "/{computerUuid}/upload_statistics", method = RequestMethod.POST, consumes = "application/json")
     public void uploadStats(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("computerUuid") String computerUuid, @RequestParam("timestamp") Long timestamp, @RequestBody String requestBody) {
-        LOGGER.debug("Received statistics upload from {}", computerUuid);
+        LOGGER.debug("Received statistics upload from {}: {}", computerUuid, requestBody);
         if (timestamp != null) {
             try {
                 eventBus.notify("statistics", Event.wrap(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp))));

@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.time.Clock;
 import org.apache.commons.compress.utils.IOUtils;
 import static org.hamcrest.core.Is.is;
+import org.junit.After;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +48,7 @@ public class LogFileProcessorTest {
         logger.addAppender(mockAppender);
     }
     
+    @After
     public void teardown() {
         logger.detachAppender(mockAppender);
     }
