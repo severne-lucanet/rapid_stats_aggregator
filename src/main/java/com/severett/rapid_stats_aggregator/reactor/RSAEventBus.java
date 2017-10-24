@@ -8,11 +8,16 @@ import reactor.bus.EventBus;
 @Component
 public class RSAEventBus extends EventBus {
 
-    private RSAEnvironment environment;
-    
+    private final RSAEnvironment environment;
+
     @Autowired
     public RSAEventBus(RSAEnvironment environment) {
         super(environment.getDispatcher(Environment.THREAD_POOL));
+        this.environment = environment;
     }
     
+    public RSAEnvironment getEnvironment() {
+        return environment;
+    }
+
 }
