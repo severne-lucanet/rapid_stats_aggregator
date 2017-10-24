@@ -57,7 +57,7 @@ public class LogFileProcessorTest {
     public void createLogFileTest() throws IOException {
         File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
-            logFileProcessor.accept(Event.wrap(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant())));
+            logFileProcessor.processLogFile(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant()));
             verify(mockAppender, times(1)).doAppend(captorLoggingEvent.capture());
         }
     }
@@ -66,7 +66,7 @@ public class LogFileProcessorTest {
     public void noLogFileTest() throws IOException {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "nothing.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
-            logFileProcessor.accept(Event.wrap(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant())));
+            logFileProcessor.processLogFile(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant()));
             verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
             assertThat(captorLoggingEvent.getAllValues().stream().anyMatch(loggingEvent -> {
                     return loggingEvent.getFormattedMessage().equals("Error processing log data from abc123: archive is not a ZIP archive");
@@ -78,7 +78,7 @@ public class LogFileProcessorTest {
     public void uncompressedLogFileTest() throws IOException {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "uncompressed.txt");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
-            logFileProcessor.accept(Event.wrap(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant())));
+            logFileProcessor.processLogFile(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant()));
             verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
             assertThat(captorLoggingEvent.getAllValues().stream().anyMatch(loggingEvent -> {
                     return loggingEvent.getFormattedMessage().equals("Error processing log data from abc123: archive is not a ZIP archive");

@@ -1,12 +1,11 @@
 package com.severett.rapid_stats_aggregator.service;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
-import com.severett.rapid_stats_aggregator.model.LogFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
+
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
@@ -14,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.bus.Event;
+
+import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.model.LogFile;
 
 @Service
 public class LogFileProcessorImpl implements LogFileProcessor {
@@ -29,8 +30,7 @@ public class LogFileProcessorImpl implements LogFileProcessor {
     }
     
     @Override
-    public void accept(Event<InputDTO<byte[]>> event) {
-        InputDTO<byte[]> inputDTO = event.getData();
+    public void processLogFile(InputDTO<byte[]> inputDTO) {
         LOGGER.debug("Processing log files for computer {}", inputDTO.getComputerUuid());
         try (SeekableInMemoryByteChannel inMemoryByteChannel = new SeekableInMemoryByteChannel(inputDTO.getPayload())) {
             try (ZipFile zipFile = new ZipFile(inMemoryByteChannel)) {

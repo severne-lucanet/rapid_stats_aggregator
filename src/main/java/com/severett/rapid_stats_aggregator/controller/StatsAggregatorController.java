@@ -1,14 +1,12 @@
 package com.severett.rapid_stats_aggregator.controller;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
-import com.severett.rapid_stats_aggregator.reactor.RSAEventBus;
-import com.severett.rapid_stats_aggregator.service.LogFileProcessor;
-import com.severett.rapid_stats_aggregator.service.StatisticsProcessor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.compress.utils.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,8 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.bus.Event;
-import static reactor.bus.selector.Selectors.$;
+
+import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.service.LogFileProcessor;
+import com.severett.rapid_stats_aggregator.service.StatisticsProcessor;
+
+import io.reactivex.Flowable;
 
 @RestController
 @RequestMapping("/stats")
@@ -30,13 +32,13 @@ public class StatsAggregatorController {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(StatsAggregatorController.class);
     
-    private final RSAEventBus eventBus;
+    private final StatisticsProcessor statisticsProcessor;
+    private final LogFileProcessor logFileProcessor;
     
     @Autowired
-    public StatsAggregatorController(RSAEventBus eventBus, StatisticsProcessor statisticsProcessor, LogFileProcessor logFileProcessor) {
-        this.eventBus = eventBus;
-        this.eventBus.on($("statistics"), statisticsProcessor);
-        this.eventBus.on($("log_files"), logFileProcessor);
+    public StatsAggregatorController(StatisticsProcessor statisticsProcessor, LogFileProcessor logFileProcessor) {
+        this.statisticsProcessor = statisticsProcessor;
+        this.logFileProcessor = logFileProcessor;
     }
     
     @RequestMapping(value = "/{computerUuid}/upload_statistics", method = RequestMethod.POST, consumes = "application/json")
@@ -45,7 +47,8 @@ public class StatsAggregatorController {
         LOGGER.debug("Received statistics upload from {}: {}", computerUuid, requestBody);
         if (timestamp != null) {
             try {
-                eventBus.notify("statistics", Event.wrap(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp))));
+                Flowable.just(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp)))
+                    .subscribe(statisticsProcessor::processStatistics);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (JSONException jsone) {
                 LOGGER.error("Error parsing JSON stats data from {}: {}", computerUuid, jsone.getMessage());
@@ -68,7 +71,9 @@ public class StatsAggregatorController {
             try {
                 // Need to transfer the input stream in the controller, otherwise
                 // the input stream will close when this function terminates
-                eventBus.notify("log_files", Event.wrap(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp))));
+                //eventBus.notify("log_files", Event.wrap(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp))));
+                Flowable.just(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp)))
+                    .subscribe(logFileProcessor::processLogFile);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (IOException ioe) {
                 LOGGER.error("Error parsing log data from {}: {}", computerUuid, ioe.getMessage());

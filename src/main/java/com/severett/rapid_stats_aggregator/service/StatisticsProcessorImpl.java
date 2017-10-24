@@ -1,14 +1,14 @@
 package com.severett.rapid_stats_aggregator.service;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
-import com.severett.rapid_stats_aggregator.exception.StatsParserException;
-import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.bus.Event;
+
+import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.exception.StatsParserException;
+import com.severett.rapid_stats_aggregator.model.ComputerStats;
 
 @Service
 public class StatisticsProcessorImpl implements StatisticsProcessor {
@@ -25,8 +25,7 @@ public class StatisticsProcessorImpl implements StatisticsProcessor {
     }
     
     @Override
-    public void accept(Event<InputDTO<JSONObject>> event) {
-        InputDTO<JSONObject> inputDTO = event.getData();
+    public void processStatistics(InputDTO<JSONObject> inputDTO) {
         String computerUuid = inputDTO.getComputerUuid();
         LOGGER.debug("Processing statistics for computer {}", computerUuid);
         try {
