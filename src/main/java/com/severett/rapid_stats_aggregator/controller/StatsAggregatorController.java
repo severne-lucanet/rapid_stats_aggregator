@@ -24,7 +24,7 @@ import com.severett.rapid_stats_aggregator.dto.InputDTO;
 import com.severett.rapid_stats_aggregator.service.LogFileProcessor;
 import com.severett.rapid_stats_aggregator.service.StatisticsProcessor;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 @RestController
 @RequestMapping("/stats")
@@ -47,7 +47,7 @@ public class StatsAggregatorController {
         LOGGER.debug("Received statistics upload from {}: {}", computerUuid, requestBody);
         if (timestamp != null) {
             try {
-                Flowable.just(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp)))
+                Observable.just(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp)))
                     .subscribe(statisticsProcessor::processStatistics);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (JSONException jsone) {
@@ -71,8 +71,7 @@ public class StatsAggregatorController {
             try {
                 // Need to transfer the input stream in the controller, otherwise
                 // the input stream will close when this function terminates
-                //eventBus.notify("log_files", Event.wrap(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp))));
-                Flowable.just(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp)))
+                Observable.just(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp)))
                     .subscribe(logFileProcessor::processLogFile);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (IOException ioe) {
