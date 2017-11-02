@@ -48,7 +48,7 @@ public class StatsAggregatorController {
         if (timestamp != null) {
             try {
                 Observable.just(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp)))
-                    .subscribe(statisticsProcessor::processStatistics);
+                    .subscribe(statisticsProcessor);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (JSONException jsone) {
                 LOGGER.error("Error parsing JSON stats data from {}: {}", computerUuid, jsone.getMessage());
@@ -72,7 +72,7 @@ public class StatsAggregatorController {
                 // Need to transfer the input stream in the controller, otherwise
                 // the input stream will close when this function terminates
                 Observable.just(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp)))
-                    .subscribe(logFileProcessor::processLogFile);
+                    .subscribe(logFileProcessor);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (IOException ioe) {
                 LOGGER.error("Error parsing log data from {}: {}", computerUuid, ioe.getMessage());

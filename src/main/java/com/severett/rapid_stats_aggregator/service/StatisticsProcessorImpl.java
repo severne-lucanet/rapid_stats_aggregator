@@ -1,5 +1,6 @@
 package com.severett.rapid_stats_aggregator.service;
 
+import io.reactivex.disposables.Disposable;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,9 @@ public class StatisticsProcessorImpl implements StatisticsProcessor {
         this.computerStatsParser = computerStatsParser;
         this.persister = persister;
     }
-    
+
     @Override
-    public void processStatistics(InputDTO<JSONObject> inputDTO) {
+    public void onNext(InputDTO<JSONObject> inputDTO) {
         String computerUuid = inputDTO.getComputerUuid();
         LOGGER.debug("Processing statistics for computer {}", computerUuid);
         try {
@@ -35,5 +36,19 @@ public class StatisticsProcessorImpl implements StatisticsProcessor {
             LOGGER.error("Statistics parsing error for computer {}: {}", computerUuid, spe.getMessage());
         }
     }
-    
+
+    @Override
+    public void onError(Throwable e) {
+        LOGGER.error("Error in StatisticsProcessorImpl: {}", e.getMessage());
+    }
+
+    @Override
+    public void onComplete() {
+        //No-op
+    }
+
+    @Override
+    public void onSubscribe(Disposable disposable) {
+        //No-op
+    }
 }

@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
+import io.reactivex.disposables.Disposable;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
@@ -28,9 +29,9 @@ public class LogFileProcessorImpl implements LogFileProcessor {
     public LogFileProcessorImpl(Persister persister) {
         this.persister = persister;
     }
-    
+
     @Override
-    public void processLogFile(InputDTO<byte[]> inputDTO) {
+    public void onNext(InputDTO<byte[]> inputDTO) {
         LOGGER.debug("Processing log files for computer {}", inputDTO.getComputerUuid());
         try (SeekableInMemoryByteChannel inMemoryByteChannel = new SeekableInMemoryByteChannel(inputDTO.getPayload())) {
             try (ZipFile zipFile = new ZipFile(inMemoryByteChannel)) {
@@ -45,5 +46,19 @@ public class LogFileProcessorImpl implements LogFileProcessor {
             LOGGER.error("Error processing log data from {}: {}", inputDTO.getComputerUuid(), ioe.getMessage());
         }
     }
-    
+
+    @Override
+    public void onError(Throwable error) {
+        LOGGER.error("Error in LogFileProcessorImpl: {}", error.getMessage());
+    }
+
+    @Override
+    public void onComplete() {
+        //No-op
+    }
+
+    @Override
+    public void onSubscribe(Disposable disposable) {
+        //No-op
+    }
 }
