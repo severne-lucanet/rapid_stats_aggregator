@@ -50,7 +50,7 @@ public class LocalFilePersisterImpl implements Persister {
     public void saveComputerStats(ComputerStats computerStats) {
         StringBuilder sb = new StringBuilder();
         sb.append(computerStats.getComputerUuid()).append(DELIMITER);
-        sb.append(computerStats.getTimestamp().getEpochSecond()).append(DELIMITER);
+        sb.append(computerStats.getTimestamp()).append(DELIMITER);
         sb.append(computerStats.getProductVersion()).append(DELIMITER);
         sb.append(computerStats.getOperatingSystem()).append(DELIMITER);
         sb.append(computerStats.getProcessCPULoad()).append(DELIMITER);

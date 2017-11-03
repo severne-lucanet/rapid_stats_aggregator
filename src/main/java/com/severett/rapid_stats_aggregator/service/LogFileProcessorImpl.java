@@ -22,12 +22,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,16 +42,19 @@ public class LogFileProcessorImpl implements LogFileProcessor {
     
     private final Path tempLogDirectory;
     private final Persister persister;
+    private final ExecutorService threadPoolExecutor;
     
     @Autowired
     public LogFileProcessorImpl (
             @Value("${com.severett.rapid_stats_aggregator.tempLogDirectory}") String tempLogDirectory,
+            @Value("${com.severett.rapid_stats_aggregator.threadPoolSize.logFiles}") Integer threadPoolSize,
             Persister persister
         ) throws IOException {
         this.tempLogDirectory = Paths.get(tempLogDirectory);
         // Create temporary log directory if it doesn't exist already
         Files.createDirectories(this.tempLogDirectory);
         this.persister = persister;
+        this.threadPoolExecutor = Executors.newFixedThreadPool(threadPoolSize);
     }
 
     @Override
@@ -59,7 +65,9 @@ public class LogFileProcessorImpl implements LogFileProcessor {
         if ((new ZipInputStream(fileStream).getNextEntry()) != null) {
             LOGGER.debug("Copying incoming zip file for computer {} to {}", computerUUID, targetFilePath.toString());
             Files.copy(fileStream, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
-            Observable.just(targetFilePath.toString()).subscribe(this);
+            Observable.just(targetFilePath.toString())
+                    .subscribeOn(Schedulers.from(threadPoolExecutor))
+                    .subscribe(this);
         } else {
             throw new IOException(String.format("Log file for computer %s must be a zip file", computerUUID));
         }
@@ -78,6 +86,7 @@ public class LogFileProcessorImpl implements LogFileProcessor {
         Arrays.stream(outstandingFiles).map(file -> file.getAbsolutePath()).collect(Collectors.toList());
         Observable.fromArray(outstandingFiles)
                 .map(file -> file.getAbsolutePath())
+                .subscribeOn(Schedulers.from(threadPoolExecutor))
                 .subscribe(this);
     }
 

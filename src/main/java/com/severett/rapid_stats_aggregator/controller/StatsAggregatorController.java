@@ -31,11 +31,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.dto.StatsDTO;
 import com.severett.rapid_stats_aggregator.service.LogFileProcessor;
 import com.severett.rapid_stats_aggregator.service.StatisticsProcessor;
 
 import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/stats")
@@ -59,8 +62,7 @@ public class StatsAggregatorController {
         LOGGER.debug("Received statistics upload from {}: {}", computerUuid, requestBody);
         if (timestamp != null) {
             try {
-                Observable.just(new InputDTO<>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp)))
-                    .subscribe(statisticsProcessor);
+                statisticsProcessor.parseStats(computerUuid, new JSONObject(requestBody), timestamp);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (JSONException jsone) {
                 LOGGER.error("Error parsing JSON stats data from {}: {}", computerUuid, jsone.getMessage());

@@ -13,16 +13,17 @@
 package com.severett.rapid_stats_aggregator.dto;
 
 import java.time.Instant;
+import org.json.JSONObject;
 
-public class InputDTO<PayloadType> {
+public class StatsDTO {
     
     private final String computerUuid;
-    private final PayloadType payload;
-    private final Instant timestamp;
+    private final JSONObject stats;
+    private final Long timestamp;
     
-    public InputDTO(String computerUuid, PayloadType payload, Instant timestamp) {
+    public StatsDTO(String computerUuid, JSONObject stats, Long timestamp) {
         this.computerUuid = computerUuid;
-        this.payload = payload;
+        this.stats = stats;
         this.timestamp = timestamp;
     }
     
@@ -30,11 +31,11 @@ public class InputDTO<PayloadType> {
         return computerUuid;
     }
     
-    public PayloadType getPayload() {
-        return payload;
+    public JSONObject getStats() {
+        return stats;
     }
     
-    public Instant getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
     

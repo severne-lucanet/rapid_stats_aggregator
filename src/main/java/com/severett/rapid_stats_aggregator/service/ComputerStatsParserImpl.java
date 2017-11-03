@@ -13,7 +13,7 @@
 package com.severett.rapid_stats_aggregator.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.dto.StatsDTO;
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import java.io.IOException;
@@ -42,12 +42,12 @@ public class ComputerStatsParserImpl implements ComputerStatsParser {
     }
 
     @Override
-    public ComputerStats parseComputerStats(InputDTO<JSONObject> inputDTO) throws StatsParserException {
+    public ComputerStats parseComputerStats(StatsDTO statsDTO) throws StatsParserException {
         try {
-            LOGGER.debug("Parsing '{}'", inputDTO.getPayload().toString());
-            ComputerStats computerStats = objMapper.readValue(inputDTO.getPayload().toString(), ComputerStats.class);
-            computerStats.setComputerUuid(inputDTO.getComputerUuid());
-            computerStats.setTimestamp(inputDTO.getTimestamp());
+            LOGGER.debug("Parsing '{}'", statsDTO.getStats().toString());
+            ComputerStats computerStats = objMapper.readValue(statsDTO.getStats().toString(), ComputerStats.class);
+            computerStats.setComputerUuid(statsDTO.getComputerUuid());
+            computerStats.setTimestamp(statsDTO.getTimestamp());
             Validator validator = validatorFactory.getValidator();
             Set<ConstraintViolation<ComputerStats>> constraintViolations = validator.validate(computerStats);
             if (constraintViolations.isEmpty()) {

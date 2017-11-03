@@ -43,6 +43,7 @@ import static org.mockito.Mockito.verify;
 public class LogFileProcessorTest {
     
     private static final File TEST_LOG_DIR = new File("C:\\Temp\\LucaNet\\RASTestLogFiles");
+    private static final Integer THREAD_POOL_SIZE = 5;
 
     private LogFileProcessor logFileProcessor;
     
@@ -58,7 +59,7 @@ public class LogFileProcessorTest {
                 }
             });
         }
-        logFileProcessor = new LogFileProcessorImpl(TEST_LOG_DIR.getAbsolutePath(), persister);
+        logFileProcessor = new LogFileProcessorImpl(TEST_LOG_DIR.getAbsolutePath(), THREAD_POOL_SIZE, persister);
     }
     
     public void shutdown() throws IOException {
@@ -72,20 +73,22 @@ public class LogFileProcessorTest {
     }
     
     @Test
-    public void createLogFileTest() throws IOException {
+    public void createLogFileTest() throws Exception {
         File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
             logFileProcessor.processLogFile("abc123", Clock.systemUTC().millis(), inputStream);
+            Thread.sleep(500L);
             verify(persister, times(1)).saveLogFile(any());
         }
     }
     
     @Test
-    public void processOutstandingLogsTest() throws IOException {
+    public void processOutstandingLogsTest() throws Exception {
         File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
         Path outputPath = Paths.get(TEST_LOG_DIR.getAbsolutePath(), "abc123.123456.zip");
         Files.copy(testLogFile.toPath(), outputPath, StandardCopyOption.REPLACE_EXISTING);
         logFileProcessor.processOutstandingFiles();
+        Thread.sleep(500L);
         verify(persister, times(1)).saveLogFile(any());
     }
     

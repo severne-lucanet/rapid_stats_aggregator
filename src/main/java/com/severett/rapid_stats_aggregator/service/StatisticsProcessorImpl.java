@@ -19,9 +19,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.dto.StatsDTO;
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class StatisticsProcessorImpl implements StatisticsProcessor {
@@ -30,19 +35,32 @@ public class StatisticsProcessorImpl implements StatisticsProcessor {
     
     private final ComputerStatsParser computerStatsParser;
     private final Persister persister;
+    private final ExecutorService threadPoolExecutor;
     
     @Autowired
-    public StatisticsProcessorImpl(ComputerStatsParser computerStatsParser, Persister persister) {
+    public StatisticsProcessorImpl(
+            ComputerStatsParser computerStatsParser,
+            Persister persister,
+            @Value("${com.severett.rapid_stats_aggregator.threadPoolSize.compStats}") Integer threadPoolSize
+        ) {
         this.computerStatsParser = computerStatsParser;
         this.persister = persister;
+        this.threadPoolExecutor = Executors.newFixedThreadPool(threadPoolSize);
     }
 
     @Override
-    public void onNext(InputDTO<JSONObject> inputDTO) {
-        String computerUuid = inputDTO.getComputerUuid();
+    public void parseStats(String computerUUID, JSONObject stats, Long timestamp) {
+        Observable.just(new StatsDTO(computerUUID, stats, timestamp))
+                .subscribeOn(Schedulers.from(threadPoolExecutor))
+                .subscribe(this);
+    }
+
+    @Override
+    public void onNext(StatsDTO statsDTO) {
+        String computerUuid = statsDTO.getComputerUuid();
         LOGGER.debug("Processing statistics for computer {}", computerUuid);
         try {
-            ComputerStats computerStats = computerStatsParser.parseComputerStats(inputDTO);
+            ComputerStats computerStats = computerStatsParser.parseComputerStats(statsDTO);
             persister.saveComputerStats(computerStats);
         } catch (StatsParserException spe) {
             LOGGER.error("Statistics parsing error for computer {}: {}", computerUuid, spe.getMessage());

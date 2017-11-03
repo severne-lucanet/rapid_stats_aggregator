@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -133,15 +134,18 @@ public class RapidStatsAggregatorTest {
     @Test
     public void setLogFileTest() throws Exception {
         File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "app_log.zip");
-        try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
-            mvc.perform(post("/stats/log123/upload_logs")
-                .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
-                .contentType("application/zip")
-                .content(IOUtils.toByteArray(fileInputStream))
-            ).andExpect(status().isOk());
-            Thread.sleep(1000);
-            assertThat(logsDirectory.listFiles().length, is(1));
+        for (int i = 0; i < 10; i++) {
+            try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
+                String urlPoint = String.format("/stats/log%d/upload_logs", i);
+                mvc.perform(post(urlPoint)
+                    .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
+                    .contentType("application/zip")
+                    .content(IOUtils.toByteArray(fileInputStream))
+                ).andExpect(status().isOk());
+            }
         }
+        Thread.sleep(1000L);
+        assertThat(logsDirectory.listFiles().length, is(10));
     }
     
     @Test

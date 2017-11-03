@@ -14,7 +14,6 @@ package com.severett.rapid_stats_aggregator.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
-import java.time.Instant;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Range;
@@ -39,7 +38,7 @@ public class ComputerStats extends PersistenceEntity {
     public ComputerStats() {
     }
     
-    public ComputerStats(String computerUuid, Instant timeReceived, String operatingSystem, String productVersion, BigDecimal cpuCapacity, BigDecimal cpuUsage, Long memoryCapacity, Long memoryUsage) {
+    public ComputerStats(String computerUuid, Long timeReceived, String operatingSystem, String productVersion, BigDecimal cpuCapacity, BigDecimal cpuUsage, Long memoryCapacity, Long memoryUsage) {
         super(computerUuid, timeReceived);
         this.operatingSystem = operatingSystem;
         this.productVersion = productVersion;

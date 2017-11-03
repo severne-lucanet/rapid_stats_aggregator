@@ -12,7 +12,6 @@
  */
 package com.severett.rapid_stats_aggregator.model;
 
-import java.time.Instant;
 import javax.validation.constraints.NotNull;
 
 public abstract class PersistenceEntity {
@@ -21,12 +20,12 @@ public abstract class PersistenceEntity {
     private String computerUuid;
     
     @NotNull
-    private Instant timestamp;
+    private Long timestamp;
     
     public PersistenceEntity() {
     }
     
-    public PersistenceEntity(String computerUuid, Instant timestamp) {
+    public PersistenceEntity(String computerUuid, Long timestamp) {
         this.computerUuid = computerUuid;
         this.timestamp = timestamp;
     }
@@ -39,11 +38,11 @@ public abstract class PersistenceEntity {
         this.computerUuid = computerUuid;
     }
     
-    public Instant getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
     
-    public void setTimestamp(Instant timestamp) {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
     

@@ -12,7 +12,7 @@
  */
 package com.severett.rapid_stats_aggregator.service;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
+import com.severett.rapid_stats_aggregator.dto.StatsDTO;
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import java.math.BigDecimal;
@@ -42,7 +42,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<>("abc123", inputJSON, Clock.systemUTC().instant()));
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
             assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
             assertThat(parsedStats.getProductVersion(), is("3.6.9"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(50.5)));
@@ -62,7 +62,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("processCPULoad", 50.5);
         inputJSON.put("systemCPULoad", 85.5);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<>("abc123", inputJSON, Clock.systemUTC().instant()));
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
             assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
             assertThat(parsedStats.getProductVersion(), is("3.6.9"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(50.5)));
@@ -84,7 +84,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", -5);
         inputJSON.put("memoryUsage", -5);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<>("abc123", inputJSON, Clock.systemUTC().instant()));
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
             // No-op - expected behavior
@@ -101,7 +101,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<>("abc123", inputJSON, Clock.systemUTC().instant()));
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
             // No-op - expected behavior
@@ -119,7 +119,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new InputDTO<>("abc123", inputJSON, Clock.systemUTC().instant()));
+            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
             assertThat(parsedStats.getOperatingSystem(), is("Windows 10"));
             assertThat(parsedStats.getProductVersion(), is("3.6.9"));
             assertThat(parsedStats.getProcessCPULoad(), is(new BigDecimal(65.5)));
