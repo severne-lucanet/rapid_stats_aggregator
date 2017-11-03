@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Clock;
+import java.util.Arrays;
 import org.apache.commons.compress.utils.IOUtils;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -45,25 +46,31 @@ public class RapidStatsAggregatorTest {
     @Autowired
     private MockMvc mvc;
     
-    @Value("${com.severett.rapid_stats_aggregator.csv.directory}")
-    private String csvDirectoryName;
+    @Value("${com.severett.rapid_stats_aggregator.lfp.directory}")
+    private String lfpDirectory;
     
-    @Value("${com.severett.rapid_stats_aggregator.csv.compStatsFile}")
-    private String csvStatsFileName;
+    @Value("${com.severett.rapid_stats_aggregator.lfp.compStatsFile}")
+    private String lfpCompStatsFile;
     
-    @Value("${com.severett.rapid_stats_aggregator.csv.logsFile}")
-    private String csvLogsFileName;
+    @Value("${com.severett.rapid_stats_aggregator.lfp.logsDirectory}")
+    private String lfpLogsDirectory;
     
-    private File csvStatsFile;
+    private File compStatsFile;
     
-    private File csvLogsFile;
+    private File logsDirectory;
     
     @Before
     public void setup() {
-        csvStatsFile = Paths.get(csvDirectoryName, csvStatsFileName).toFile();
-        csvLogsFile = Paths.get(csvDirectoryName, csvLogsFileName).toFile();
-        csvStatsFile.delete();
-        csvLogsFile.delete();
+        compStatsFile = Paths.get(lfpDirectory, lfpCompStatsFile).toFile();
+        logsDirectory = Paths.get(lfpDirectory, lfpLogsDirectory).toFile();
+        compStatsFile.delete();
+        if (logsDirectory.exists()) {
+            Arrays.stream(logsDirectory.listFiles()).forEach(file -> {
+                if (file.isFile()) {
+                    file.delete();
+                }
+            });
+        }
     }
     
     @Test
@@ -100,7 +107,7 @@ public class RapidStatsAggregatorTest {
         // Need to wait for the stats to be parsed and persisted, as this
         // is an asynchronous operation
         Thread.sleep(1000);
-        String[] csvStatsLines = new String(Files.readAllBytes(csvStatsFile.toPath())).split("\n");
+        String[] csvStatsLines = new String(Files.readAllBytes(compStatsFile.toPath())).split("\n");
         assertThat(csvStatsLines.length, is(2));
         String[] abc123StatsStr = csvStatsLines[0].split("###");
         assertThat(abc123StatsStr.length, is(8));
@@ -127,14 +134,13 @@ public class RapidStatsAggregatorTest {
     public void setLogFileTest() throws Exception {
         File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "app_log.zip");
         try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
-            mvc.perform(post("/stats/abc123/upload_logs")
+            mvc.perform(post("/stats/log123/upload_logs")
                 .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/zip")
                 .content(IOUtils.toByteArray(fileInputStream))
             ).andExpect(status().isOk());
             Thread.sleep(1000);
-            String[] csvStatsLines = new String(Files.readAllBytes(csvLogsFile.toPath())).split("\n");
-            assertThat(csvStatsLines.length, is(1));
+            assertThat(logsDirectory.listFiles().length, is(1));
         }
     }
     
@@ -188,7 +194,7 @@ public class RapidStatsAggregatorTest {
             ).andExpect(status().isOk());
         
         Thread.sleep(1000);
-        assertThat(csvStatsFile.getTotalSpace(), is(0L));
+        assertThat(compStatsFile.getTotalSpace(), is(0L));
     }
     
     @Test
@@ -204,13 +210,13 @@ public class RapidStatsAggregatorTest {
     public void noLogTest() throws Exception {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "nothing.zip");
         try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
-            mvc.perform(post("/stats/abc123/upload_logs")
+            mvc.perform(post("/stats/nolog123/upload_logs")
                 .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/zip")
                 .content(IOUtils.toByteArray(fileInputStream))
-            ).andExpect(status().isOk());
+            ).andExpect(status().isBadRequest());
             Thread.sleep(1000);
-            assertThat(csvLogsFile.getTotalSpace(), is(0L));
+            assertThat(logsDirectory.listFiles().length, is(0));
         }
     }
     
@@ -218,13 +224,13 @@ public class RapidStatsAggregatorTest {
     public void uncompressedLogTest() throws Exception {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "uncompressed.txt");
         try (InputStream fileInputStream = new FileInputStream(testLogFile)) {
-            mvc.perform(post("/stats/abc123/upload_logs")
+            mvc.perform(post("/stats/uncompressed123/upload_logs")
                 .param("timestamp", Long.toString(Clock.systemUTC().instant().getEpochSecond()))
                 .contentType("application/zip")
                 .content(IOUtils.toByteArray(fileInputStream))
-            ).andExpect(status().isOk());
+            ).andExpect(status().isBadRequest());
             Thread.sleep(1000);
-            assertThat(csvLogsFile.getTotalSpace(), is(0L));
+            assertThat(logsDirectory.listFiles().length, is(0));
         }
     }
 }

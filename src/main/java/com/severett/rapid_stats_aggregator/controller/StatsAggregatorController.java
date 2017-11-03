@@ -19,7 +19,6 @@ import java.time.Instant;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.compress.utils.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -48,9 +47,10 @@ public class StatsAggregatorController {
     private final LogFileProcessor logFileProcessor;
     
     @Autowired
-    public StatsAggregatorController(StatisticsProcessor statisticsProcessor, LogFileProcessor logFileProcessor) {
+    public StatsAggregatorController(StatisticsProcessor statisticsProcessor, LogFileProcessor logFileProcessor) throws IOException {
         this.statisticsProcessor = statisticsProcessor;
         this.logFileProcessor = logFileProcessor;
+        this.logFileProcessor.processOutstandingFiles();
     }
     
     @RequestMapping(value = "/{computerUuid}/upload_statistics", method = RequestMethod.POST, consumes = "application/json")
@@ -81,10 +81,7 @@ public class StatsAggregatorController {
         LOGGER.debug("Received log file upload from {}", computerUuid);
         if (timestamp != null) {
             try {
-                // Need to transfer the input stream in the controller, otherwise
-                // the input stream will close when this function terminates
-                Observable.just(new InputDTO<>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp)))
-                    .subscribe(logFileProcessor);
+                logFileProcessor.processLogFile(computerUuid, timestamp, zipInputStream);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (IOException ioe) {
                 LOGGER.error("Error parsing log data from {}: {}", computerUuid, ioe.getMessage());

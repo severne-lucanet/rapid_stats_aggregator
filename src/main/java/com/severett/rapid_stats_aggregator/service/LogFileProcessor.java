@@ -12,8 +12,14 @@
  */
 package com.severett.rapid_stats_aggregator.service;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
 import io.reactivex.Observer;
+import java.io.IOException;
+import java.io.InputStream;
 
-public interface LogFileProcessor extends Observer<InputDTO<byte[]>> {
+public interface LogFileProcessor extends Observer<String> {
+    
+    void processLogFile(String computerUUID, Long timestamp, InputStream fileStream) throws IOException;
+    
+    void processOutstandingFiles() throws IOException;
+    
 }

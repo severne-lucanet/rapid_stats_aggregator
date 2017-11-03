@@ -13,12 +13,13 @@
 package com.severett.rapid_stats_aggregator.service;
 
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
-import com.severett.rapid_stats_aggregator.model.LogFile;
+import java.io.File;
+import java.io.IOException;
 
 public interface Persister {
 
     public void saveComputerStats(ComputerStats computerStats);
     
-    public void saveLogFile(LogFile logFile);
+    public void saveLogFile(File logFile) throws IOException;
     
 }

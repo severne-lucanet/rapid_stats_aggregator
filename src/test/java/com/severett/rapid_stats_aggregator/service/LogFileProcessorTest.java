@@ -12,10 +12,6 @@
  */
 package com.severett.rapid_stats_aggregator.service;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,69 +19,85 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Clock;
 
-import org.apache.commons.compress.utils.IOUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.LoggerFactory;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
 import com.severett.rapid_stats_aggregator.util.TestConstants;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import static org.hamcrest.core.Is.is;
+import org.junit.Assert;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.LoggingEvent;
-import ch.qos.logback.core.Appender;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LogFileProcessorTest {
+    
+    private static final File TEST_LOG_DIR = new File("C:\\Temp\\LucaNet\\RASTestLogFiles");
 
     private LogFileProcessor logFileProcessor;
     
     @Mock
     private Persister persister;
     
-    @Mock
-    private Appender mockAppender;
-    @Captor
-    private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
-    
-    private Logger logger;
-    
     @Before
-    public void setup() {
-        logFileProcessor = new LogFileProcessorImpl(persister);
-        logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        logger.addAppender(mockAppender);
+    public void setup() throws IOException {
+        if (TEST_LOG_DIR.exists()) {
+            Arrays.stream(TEST_LOG_DIR.listFiles()).forEach(file -> {
+                if (file.isFile()) {
+                    file.delete();
+                }
+            });
+        }
+        logFileProcessor = new LogFileProcessorImpl(TEST_LOG_DIR.getAbsolutePath(), persister);
     }
     
-    @After
-    public void teardown() {
-        logger.detachAppender(mockAppender);
+    public void shutdown() throws IOException {
+        if (TEST_LOG_DIR.exists()) {
+            Arrays.stream(TEST_LOG_DIR.listFiles()).forEach(file -> {
+                if (file.isFile()) {
+                    file.delete();
+                }
+            });
+        }
     }
     
     @Test
     public void createLogFileTest() throws IOException {
         File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
-            logFileProcessor.onNext(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant()));
-            verify(mockAppender, times(1)).doAppend(captorLoggingEvent.capture());
+            logFileProcessor.processLogFile("abc123", Clock.systemUTC().millis(), inputStream);
+            verify(persister, times(1)).saveLogFile(any());
         }
+    }
+    
+    @Test
+    public void processOutstandingLogsTest() throws IOException {
+        File testLogFile = new File(TestConstants.GOOD_RESOURCES_DIRECTORY.getAbsoluteFile(), "lorem_ipsum.zip");
+        Path outputPath = Paths.get(TEST_LOG_DIR.getAbsolutePath(), "abc123.123456.zip");
+        Files.copy(testLogFile.toPath(), outputPath, StandardCopyOption.REPLACE_EXISTING);
+        logFileProcessor.processOutstandingFiles();
+        verify(persister, times(1)).saveLogFile(any());
     }
     
     @Test
     public void noLogFileTest() throws IOException {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "nothing.zip");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
-            logFileProcessor.onNext(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant()));
-            verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
-            assertThat(captorLoggingEvent.getAllValues().stream().anyMatch(loggingEvent -> {
-                    return loggingEvent.getFormattedMessage().equals("Error processing log data from abc123: archive is not a ZIP archive");
-                }), is(true));
+            logFileProcessor.processLogFile("empty123", Clock.systemUTC().millis(), inputStream);
+            Assert.fail("Expected processing to fail, but it didn't");
+        } catch (IOException ioe) {
+            assertThat(ioe.getMessage(), is("Log file for computer empty123 must be a zip file"));
+            verify(persister, times(0)).saveLogFile(any());
         }
     }
     
@@ -93,11 +105,11 @@ public class LogFileProcessorTest {
     public void uncompressedLogFileTest() throws IOException {
         File testLogFile = new File(TestConstants.BAD_RESOURCES_DIRECTORY.getAbsoluteFile(), "uncompressed.txt");
         try (InputStream inputStream = new FileInputStream(testLogFile)) {
-            logFileProcessor.onNext(new InputDTO<>("abc123", IOUtils.toByteArray(inputStream), Clock.systemUTC().instant()));
-            verify(mockAppender, times(2)).doAppend(captorLoggingEvent.capture());
-            assertThat(captorLoggingEvent.getAllValues().stream().anyMatch(loggingEvent -> {
-                    return loggingEvent.getFormattedMessage().equals("Error processing log data from abc123: archive is not a ZIP archive");
-                }), is(true));
+            logFileProcessor.processLogFile("uncompressed123", Clock.systemUTC().millis(), inputStream);
+            Assert.fail("Expected processing to fail, but it didn't");
+        } catch (IOException ioe) {
+            assertThat(ioe.getMessage(), is("Log file for computer uncompressed123 must be a zip file"));
+            verify(persister, times(0)).saveLogFile(any());
         }
     }
     

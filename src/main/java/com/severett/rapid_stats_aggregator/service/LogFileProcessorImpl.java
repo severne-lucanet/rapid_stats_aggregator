@@ -12,50 +12,88 @@
  */
 package com.severett.rapid_stats_aggregator.service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 import io.reactivex.disposables.Disposable;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.severett.rapid_stats_aggregator.dto.InputDTO;
-import com.severett.rapid_stats_aggregator.model.LogFile;
+import io.reactivex.Observable;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.zip.ZipInputStream;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class LogFileProcessorImpl implements LogFileProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogFileProcessorImpl.class);
     
+    private final Path tempLogDirectory;
     private final Persister persister;
     
     @Autowired
-    public LogFileProcessorImpl(Persister persister) {
+    public LogFileProcessorImpl (
+            @Value("${com.severett.rapid_stats_aggregator.tempLogDirectory}") String tempLogDirectory,
+            Persister persister
+        ) throws IOException {
+        this.tempLogDirectory = Paths.get(tempLogDirectory);
+        // Create temporary log directory if it doesn't exist already
+        Files.createDirectories(this.tempLogDirectory);
         this.persister = persister;
     }
 
     @Override
-    public void onNext(InputDTO<byte[]> inputDTO) {
-        LOGGER.debug("Processing log files for computer {}", inputDTO.getComputerUuid());
-        try (SeekableInMemoryByteChannel inMemoryByteChannel = new SeekableInMemoryByteChannel(inputDTO.getPayload())) {
-            try (ZipFile zipFile = new ZipFile(inMemoryByteChannel)) {
-                ZipArchiveEntry archiveEntry = zipFile.getEntries().nextElement();
-                try (InputStream inputStream = zipFile.getInputStream(archiveEntry)) {
-                    String content = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining("\n"));
-                    LogFile logFile = new LogFile(inputDTO.getComputerUuid(), inputDTO.getTimestamp(), content);
-                    persister.saveLogFile(logFile);
-                }
+    public void processLogFile(String computerUUID, Long timestamp, InputStream fileStream) throws IOException {
+        StringBuilder fileNameBuilder = new StringBuilder();
+        fileNameBuilder.append(computerUUID).append(".").append(timestamp).append(".zip");
+        Path targetFilePath = Paths.get(tempLogDirectory.toString(), fileNameBuilder.toString());
+        if ((new ZipInputStream(fileStream).getNextEntry()) != null) {
+            LOGGER.debug("Copying incoming zip file for computer {} to {}", computerUUID, targetFilePath.toString());
+            Files.copy(fileStream, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
+            Observable.just(targetFilePath.toString()).subscribe(this);
+        } else {
+            throw new IOException(String.format("Log file for computer %s must be a zip file", computerUUID));
+        }
+    }
+    
+    /**
+     * Process any temporary files that might have not been pushed to the persistence
+     * destination for whatever reason (e.g. program interruption, persistence
+     * destination unreachable)
+     * @throws IOException 
+     */
+    @Override
+    public void processOutstandingFiles() throws IOException {
+        LOGGER.debug("Processing any outstanding log files");
+        File[] outstandingFiles = tempLogDirectory.toFile().listFiles((d, name) -> name.matches("^\\w+\\.\\d+\\.zip$"));
+        Arrays.stream(outstandingFiles).map(file -> file.getAbsolutePath()).collect(Collectors.toList());
+        Observable.fromArray(outstandingFiles)
+                .map(file -> file.getAbsolutePath())
+                .subscribe(this);
+    }
+
+    @Override
+    public void onNext(String logFilePath) {
+        LOGGER.debug("Processing log file {}", logFilePath);
+        File logFile = new File(logFilePath);
+        try {
+            persister.saveLogFile(logFile);
+            if (logFile.delete()) {
+                LOGGER.debug("Log file {} successfully removed", logFilePath);
+            } else {
+                LOGGER.warn("Log file {} could not be removed", logFilePath);
             }
         } catch (IOException ioe) {
-            LOGGER.error("Error processing log data from {}: {}", inputDTO.getComputerUuid(), ioe.getMessage());
+            LOGGER.error("Error persisting {}: {}", logFilePath, ioe.getMessage());
         }
     }
 
