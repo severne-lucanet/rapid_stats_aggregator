@@ -47,7 +47,7 @@ public class StatsAggregatorController {
         LOGGER.debug("Received statistics upload from {}: {}", computerUuid, requestBody);
         if (timestamp != null) {
             try {
-                Observable.just(new InputDTO<JSONObject>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp)))
+                Observable.just(new InputDTO<>(computerUuid, new JSONObject(requestBody), Instant.ofEpochSecond(timestamp)))
                     .subscribe(statisticsProcessor);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (JSONException jsone) {
@@ -71,7 +71,7 @@ public class StatsAggregatorController {
             try {
                 // Need to transfer the input stream in the controller, otherwise
                 // the input stream will close when this function terminates
-                Observable.just(new InputDTO<byte[]>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp)))
+                Observable.just(new InputDTO<>(computerUuid, IOUtils.toByteArray(zipInputStream), Instant.ofEpochSecond(timestamp)))
                     .subscribe(logFileProcessor);
                 response.setStatus(HttpServletResponse.SC_OK);
             } catch (IOException ioe) {

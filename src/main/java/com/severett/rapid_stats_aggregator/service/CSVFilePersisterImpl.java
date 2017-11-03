@@ -2,6 +2,7 @@ package com.severett.rapid_stats_aggregator.service;
 
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import com.severett.rapid_stats_aggregator.model.LogFile;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,11 +23,12 @@ public class CSVFilePersisterImpl implements Persister {
     private final Path statsFilePath;
     private final Path logFilePath;  
     
-    public CSVFilePersisterImpl(
+    public CSVFilePersisterImpl (
             @Value("${com.severett.rapid_stats_aggregator.csv.directory}") String csvFileDirectory,
             @Value("${com.severett.rapid_stats_aggregator.csv.compStatsFile}") String compStatsFile,
             @Value("${com.severett.rapid_stats_aggregator.csv.logsFile}") String logsFile
-    ) {
+    ) throws IOException {
+        Files.createDirectories(Paths.get(csvFileDirectory));
         statsFilePath = Paths.get(csvFileDirectory, compStatsFile);
         logFilePath = Paths.get(csvFileDirectory, logsFile);
     }
