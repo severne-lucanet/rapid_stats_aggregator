@@ -18,8 +18,8 @@ import java.io.IOException;
 
 public interface Persister {
 
-    public void saveComputerStats(ComputerStats computerStats);
+    void saveComputerStats(ComputerStats computerStats);
     
-    public void saveLogFile(File logFile) throws IOException;
+    void saveLogFile(File logFile) throws IOException;
     
 }

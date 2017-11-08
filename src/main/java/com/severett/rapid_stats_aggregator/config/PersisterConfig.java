@@ -13,7 +13,6 @@
 package com.severett.rapid_stats_aggregator.config;
 
 import com.severett.rapid_stats_aggregator.service.Persister;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -21,9 +20,12 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PersisterConfig {
-    
-    @Autowired
-    private ApplicationContext context;
+
+    private final ApplicationContext context;
+
+    public PersisterConfig(ApplicationContext context) {
+        this.context = context;
+    }
     
     @Bean
     public Persister getPersister(@Value("${com.severett.rapid_stats_aggregator.persisterType}") String persisterType) {

@@ -18,6 +18,6 @@ import org.json.JSONObject;
 
 public interface StatisticsProcessor extends Observer<StatsDTO> {
     
-    public void parseStats(String computerUUID, JSONObject stats, Long timestamp);
+    void parseStats(String computerUUID, JSONObject stats, Long timestamp);
     
 }

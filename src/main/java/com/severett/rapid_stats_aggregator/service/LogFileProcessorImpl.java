@@ -12,29 +12,25 @@
  */
 package com.severett.rapid_stats_aggregator.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class LogFileProcessorImpl implements LogFileProcessor {
@@ -44,8 +40,7 @@ public class LogFileProcessorImpl implements LogFileProcessor {
     private final Path tempLogDirectory;
     private final Persister persister;
     private final ExecutorService threadPoolExecutor;
-    
-    @Autowired
+
     public LogFileProcessorImpl (
             @Value("${com.severett.rapid_stats_aggregator.tempLogDirectory}") String tempLogDirectory,
             @Value("${com.severett.rapid_stats_aggregator.threadPoolSize.logFiles}") Integer threadPoolSize,
@@ -78,15 +73,13 @@ public class LogFileProcessorImpl implements LogFileProcessor {
      * Process any temporary files that might have not been pushed to the persistence
      * destination for whatever reason (e.g. program interruption, persistence
      * destination unreachable)
-     * @throws IOException 
      */
     @Override
-    public void processOutstandingFiles() throws IOException {
+    public void processOutstandingFiles() {
         LOGGER.debug("Processing any outstanding log files");
         File[] outstandingFiles = tempLogDirectory.toFile().listFiles((d, name) -> name.matches("^\\w+\\.\\d+\\.zip$"));
-        Arrays.stream(outstandingFiles).map(file -> file.getAbsolutePath()).collect(Collectors.toList());
         Observable.fromArray(outstandingFiles)
-                .map(file -> file.getAbsolutePath())
+                .map(File::getAbsolutePath)
                 .subscribeOn(Schedulers.from(threadPoolExecutor))
                 .subscribe(this);
     }

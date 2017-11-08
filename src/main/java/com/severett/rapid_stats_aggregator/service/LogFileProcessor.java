@@ -20,6 +20,6 @@ public interface LogFileProcessor extends Observer<String> {
     
     void processLogFile(String computerUUID, Long timestamp, InputStream fileStream) throws IOException;
     
-    void processOutstandingFiles() throws IOException;
+    void processOutstandingFiles();
     
 }

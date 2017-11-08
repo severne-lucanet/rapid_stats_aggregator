@@ -22,10 +22,10 @@ public abstract class PersistenceEntity {
     @NotNull
     private Long timestamp;
     
-    public PersistenceEntity() {
+    PersistenceEntity() {
     }
     
-    public PersistenceEntity(String computerUuid, Long timestamp) {
+    PersistenceEntity(String computerUuid, Long timestamp) {
         this.computerUuid = computerUuid;
         this.timestamp = timestamp;
     }

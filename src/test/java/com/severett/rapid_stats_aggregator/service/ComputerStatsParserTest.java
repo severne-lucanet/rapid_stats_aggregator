@@ -84,7 +84,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", -5);
         inputJSON.put("memoryUsage", -5);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
+            computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
             // No-op - expected behavior
@@ -101,7 +101,7 @@ public class ComputerStatsParserTest {
         inputJSON.put("memoryCapacity", 1000000);
         inputJSON.put("memoryUsage", 100000);
         try {
-            ComputerStats parsedStats = computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
+            computerStatsParser.parseComputerStats(new StatsDTO("abc123", inputJSON, Clock.systemUTC().instant().getEpochSecond()));
             fail("Expected a StatsParserException, yet none was raised");
         } catch (StatsParserException spe) {
             // No-op - expected behavior

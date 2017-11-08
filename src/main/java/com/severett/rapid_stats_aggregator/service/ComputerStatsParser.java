@@ -18,6 +18,6 @@ import com.severett.rapid_stats_aggregator.model.ComputerStats;
 
 public interface ComputerStatsParser {
 
-    public ComputerStats parseComputerStats(StatsDTO statsDTO) throws StatsParserException;
+    ComputerStats parseComputerStats(StatsDTO statsDTO) throws StatsParserException;
     
 }

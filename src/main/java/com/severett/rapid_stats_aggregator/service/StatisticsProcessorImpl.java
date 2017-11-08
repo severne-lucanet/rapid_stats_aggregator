@@ -12,22 +12,21 @@
  */
 package com.severett.rapid_stats_aggregator.service;
 
-import io.reactivex.disposables.Disposable;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.severett.rapid_stats_aggregator.dto.StatsDTO;
 import com.severett.rapid_stats_aggregator.exception.StatsParserException;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class StatisticsProcessorImpl implements StatisticsProcessor {
@@ -37,8 +36,7 @@ public class StatisticsProcessorImpl implements StatisticsProcessor {
     private final ComputerStatsParser computerStatsParser;
     private final Persister persister;
     private final ExecutorService threadPoolExecutor;
-    
-    @Autowired
+
     public StatisticsProcessorImpl(
             ComputerStatsParser computerStatsParser,
             @Qualifier("getPersister") Persister persister,
