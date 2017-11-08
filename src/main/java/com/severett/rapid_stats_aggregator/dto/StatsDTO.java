@@ -12,9 +12,8 @@
  */
 package com.severett.rapid_stats_aggregator.dto;
 
-import java.time.Instant;
 import org.json.JSONObject;
-
+    
 public class StatsDTO {
     
     private final String computerUuid;

@@ -14,7 +14,6 @@ package com.severett.rapid_stats_aggregator.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,14 +30,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.severett.rapid_stats_aggregator.dto.StatsDTO;
 import com.severett.rapid_stats_aggregator.service.LogFileProcessor;
 import com.severett.rapid_stats_aggregator.service.StatisticsProcessor;
 
-import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/stats")
@@ -64,6 +58,7 @@ public class StatsAggregatorController {
             try {
                 statisticsProcessor.parseStats(computerUuid, new JSONObject(requestBody), timestamp);
                 response.setStatus(HttpServletResponse.SC_OK);
+                LOGGER.debug("Finished statistics upload from {}", computerUuid);
             } catch (JSONException jsone) {
                 LOGGER.error("Error parsing JSON stats data from {}: {}", computerUuid, jsone.getMessage());
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 @Service
@@ -48,7 +49,7 @@ public class LogFileProcessorImpl implements LogFileProcessor {
     public LogFileProcessorImpl (
             @Value("${com.severett.rapid_stats_aggregator.tempLogDirectory}") String tempLogDirectory,
             @Value("${com.severett.rapid_stats_aggregator.threadPoolSize.logFiles}") Integer threadPoolSize,
-            Persister persister
+            @Qualifier("getPersister") Persister persister
         ) throws IOException {
         this.tempLogDirectory = Paths.get(tempLogDirectory);
         // Create temporary log directory if it doesn't exist already

@@ -23,7 +23,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,8 +43,9 @@ public class ComputerStatsParserImpl implements ComputerStatsParser {
     @Override
     public ComputerStats parseComputerStats(StatsDTO statsDTO) throws StatsParserException {
         try {
-            LOGGER.debug("Parsing '{}'", statsDTO.getStats().toString());
+            LOGGER.debug("Parsing for {} '{}'", statsDTO.getComputerUuid(), statsDTO.getStats().toString());
             ComputerStats computerStats = objMapper.readValue(statsDTO.getStats().toString(), ComputerStats.class);
+            LOGGER.debug("Parsed stats for: {}", statsDTO.getComputerUuid());
             computerStats.setComputerUuid(statsDTO.getComputerUuid());
             computerStats.setTimestamp(statsDTO.getTimestamp());
             Validator validator = validatorFactory.getValidator();

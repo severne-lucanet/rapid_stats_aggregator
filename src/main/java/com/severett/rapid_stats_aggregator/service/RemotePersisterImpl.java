@@ -15,11 +15,23 @@ package com.severett.rapid_stats_aggregator.service;
 import com.severett.rapid_stats_aggregator.model.ComputerStats;
 import java.io.File;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-public interface Persister {
-
-    public void saveComputerStats(ComputerStats computerStats);
+@Service("Remote")
+public class RemotePersisterImpl implements Persister {
     
-    public void saveLogFile(File logFile) throws IOException;
+    private static final Logger LOGGER = LoggerFactory.getLogger(RemotePersisterImpl.class);
+
+    @Override
+    public void saveComputerStats(ComputerStats computerStats) {
+        LOGGER.debug("Uploading stats for {} to S3", computerStats.getComputerUuid());
+    }
+
+    @Override
+    public void saveLogFile(File logFile) throws IOException {
+        LOGGER.debug("Uploading log file to Kibana server");
+    }
     
 }

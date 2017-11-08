@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-@Service
+@Service("Local")
 public class LocalFilePersisterImpl implements Persister {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalFilePersisterImpl.class);
@@ -59,10 +59,11 @@ public class LocalFilePersisterImpl implements Persister {
         sb.append(computerStats.getMemoryCapacity()).append("\n");
         
         try {
-            LOGGER.debug("Persisting computer stats to {}", statsFilePath);
+            LOGGER.debug("Persisting computer stats for {} to {}", computerStats.getComputerUuid(), statsFilePath);
             synchronized (statsFilePath) {
                 Files.write(statsFilePath, sb.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
+            LOGGER.debug("Finished persisting stats for {}", computerStats.getComputerUuid());
         } catch (IOException ioe) {
             LOGGER.error("Error writting to {}: {}", statsFilePath, ioe.getMessage());
         }

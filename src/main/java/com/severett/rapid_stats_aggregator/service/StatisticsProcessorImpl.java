@@ -26,6 +26,7 @@ import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 @Service
@@ -40,7 +41,7 @@ public class StatisticsProcessorImpl implements StatisticsProcessor {
     @Autowired
     public StatisticsProcessorImpl(
             ComputerStatsParser computerStatsParser,
-            Persister persister,
+            @Qualifier("getPersister") Persister persister,
             @Value("${com.severett.rapid_stats_aggregator.threadPoolSize.compStats}") Integer threadPoolSize
         ) {
         this.computerStatsParser = computerStatsParser;
